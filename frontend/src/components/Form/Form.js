@@ -37,6 +37,7 @@ function Form(props) {
       className="max-w-md mx-auto p-4 bg-white rounded-lg shadow-md"
       onSubmit={handleSubmit}
     >
+
       <Preferences
         preferences={preferences}
         onPreferenceChange={(selected) =>
@@ -55,6 +56,7 @@ function Form(props) {
         }
       />
       <SubmitButton text="Obter recomendação" />
+      
     </form>
   );
 }

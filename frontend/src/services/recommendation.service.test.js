@@ -80,4 +80,31 @@ describe('recommendationService', () => {
     expect(recommendations).toHaveLength(1);
     expect(recommendations[0].name).toBe('RD Conversas');
   });
+
+  test('Selecionar apenas o tipo de recomendação SingleProduct retorna o último produto', () => {
+    const formData = {
+      selectedRecommendationType: 'SingleProduct',
+    };
+
+    const recommendations = recommendationService.getRecommendations(
+      formData,
+      mockProducts
+    );
+
+    expect(recommendations).toHaveLength(1);
+    expect(recommendations[0].name).toBe('RD Mentor AI');
+  });
+
+  test('Selecionar apenas o tipo de recomendação MultipleProducts retorna uma lista com todos os produtos', () => {
+    const formData = {
+      selectedRecommendationType: 'MultipleProducts',
+    };
+
+    const recommendations = recommendationService.getRecommendations(
+      formData,
+      mockProducts
+    );
+
+    expect(recommendations).toHaveLength(4);
+  });
 });
