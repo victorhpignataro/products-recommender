@@ -2,23 +2,34 @@ import recommendationService from './recommendation.service';
 import mockProducts from '../mocks/mockProducts';
 
 describe('recommendationService', () => {
-  test('Retorna recomendação correta para SingleProduct com base nas preferências selecionadas', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  const resolveRecommendations = async (formData, products) => {
+    const promise = recommendationService.getRecommendations(formData, products);
+    await jest.advanceTimersByTimeAsync(600);
+    return promise;
+  };
+
+  test('Retorna recomendação correta para SingleProduct com base nas preferências selecionadas', async () => {
     const formData = {
       selectedPreferences: ['Integração com chatbots'],
       selectedFeatures: ['Chat ao vivo e mensagens automatizadas'],
       selectedRecommendationType: 'SingleProduct',
     };
 
-    const recommendations = recommendationService.getRecommendations(
-      formData,
-      mockProducts
-    );
+    const recommendations = await resolveRecommendations(formData, mockProducts);
 
     expect(recommendations).toHaveLength(1);
     expect(recommendations[0].name).toBe('RD Conversas');
   });
 
-  test('Retorna recomendações corretas para MultipleProducts com base nas preferências selecionadas', () => {
+  test('Retorna recomendações corretas para MultipleProducts com base nas preferências selecionadas', async () => {
     const formData = {
       selectedPreferences: [
         'Integração fácil com ferramentas de e-mail',
@@ -32,10 +43,7 @@ describe('recommendationService', () => {
       selectedRecommendationType: 'MultipleProducts',
     };
 
-    const recommendations = recommendationService.getRecommendations(
-      formData,
-      mockProducts
-    );
+    const recommendations = await resolveRecommendations(formData, mockProducts);
 
     expect(recommendations).toHaveLength(2);
     expect(recommendations.map((product) => product.name)).toEqual([
@@ -44,7 +52,7 @@ describe('recommendationService', () => {
     ]);
   });
 
-  test('Retorna apenas um produto para SingleProduct com mais de um produto de match', () => {
+  test('Retorna apenas um produto para SingleProduct com mais de um produto de match', async () => {
     const formData = {
       selectedPreferences: [
         'Integração fácil com ferramentas de e-mail',
@@ -57,53 +65,41 @@ describe('recommendationService', () => {
       selectedRecommendationType: 'SingleProduct',
     };
 
-    const recommendations = recommendationService.getRecommendations(
-      formData,
-      mockProducts
-    );
+    const recommendations = await resolveRecommendations(formData, mockProducts);
 
     expect(recommendations).toHaveLength(1);
     expect(recommendations[0].name).toBe('RD Station Marketing');
   });
 
-  test('Retorna o último match em caso de empate para SingleProduct', () => {
+  test('Retorna o último match em caso de empate para SingleProduct', async () => {
     const formData = {
       selectedPreferences: ['Automação de marketing', 'Integração com chatbots'],
       selectedRecommendationType: 'SingleProduct',
     };
 
-    const recommendations = recommendationService.getRecommendations(
-      formData,
-      mockProducts
-    );
+    const recommendations = await resolveRecommendations(formData, mockProducts);
 
     expect(recommendations).toHaveLength(1);
     expect(recommendations[0].name).toBe('RD Conversas');
   });
 
-  test('Selecionar apenas o tipo de recomendação SingleProduct retorna o último produto', () => {
+  test('Selecionar apenas o tipo de recomendação SingleProduct retorna o último produto', async () => {
     const formData = {
       selectedRecommendationType: 'SingleProduct',
     };
 
-    const recommendations = recommendationService.getRecommendations(
-      formData,
-      mockProducts
-    );
+    const recommendations = await resolveRecommendations(formData, mockProducts);
 
     expect(recommendations).toHaveLength(1);
     expect(recommendations[0].name).toBe('RD Mentor AI');
   });
 
-  test('Selecionar apenas o tipo de recomendação MultipleProducts retorna uma lista com todos os produtos', () => {
+  test('Selecionar apenas o tipo de recomendação MultipleProducts retorna uma lista com todos os produtos', async () => {
     const formData = {
       selectedRecommendationType: 'MultipleProducts',
     };
 
-    const recommendations = recommendationService.getRecommendations(
-      formData,
-      mockProducts
-    );
+    const recommendations = await resolveRecommendations(formData, mockProducts);
 
     expect(recommendations).toHaveLength(4);
   });

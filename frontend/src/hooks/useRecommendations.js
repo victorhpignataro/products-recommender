@@ -1,16 +1,19 @@
-// useRecommendations.js
-
 import { useState } from 'react';
 import recommendationService from '../services/recommendation.service';
 
 function useRecommendations(products) {
-  const [recommendations, setRecommendations] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const getRecommendations = (formData) => {
-    return recommendationService.getRecommendations(formData, products);
+  const getRecommendations = async (formData) => {
+    setIsLoading(true);
+    try {
+      return await recommendationService.getRecommendations(formData, products);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  return { recommendations, getRecommendations, setRecommendations };
+  return { getRecommendations, isLoading };
 }
 
 export default useRecommendations;

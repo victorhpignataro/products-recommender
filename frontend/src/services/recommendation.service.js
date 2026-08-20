@@ -1,43 +1,42 @@
-// getRecommendations.js
-
 const multipleProductsLogic = ({
   selectedPreferences,
   selectedFeatures,
   products,
 }) => {
-  if(!selectedFeatures?.length && !selectedPreferences?.length) {
+  if (!selectedFeatures?.length && !selectedPreferences?.length) {
     return products;
   }
 
-  let result = products.filter((element) => {
-    const productPreferences = element?.preferences ?? [];
-    const productFeatures = element?.features ?? [];
+  return products.filter((product) => {
+    const productPreferences = product?.preferences ?? [];
+    const productFeatures = product?.features ?? [];
 
-    const hasPreference = (selectedPreferences ?? []).some((selectedPreference) => {
-      return productPreferences.includes(selectedPreference);
-    });
+    const hasPreference = (selectedPreferences ?? []).some(
+      (selectedPreference) =>
+        productPreferences.includes(selectedPreference),
+    );
 
-    const hasFeature = (selectedFeatures ?? []).some((selectedFeature) => {
-      return productFeatures.includes(selectedFeature);
-    });
+    const hasFeature = (selectedFeatures ?? []).some(
+      (selectedFeature) => productFeatures.includes(selectedFeature),
+    );
 
     return hasPreference || hasFeature;
   });
-
-  return result;
 };
 
 const getMaxScoreProductId = (scoreMap) => {
   let maxScore = 0;
   let maxScoreId = null;
+
   Object.keys(scoreMap).forEach((key) => {
     if (scoreMap[key] >= maxScore) {
       maxScore = scoreMap[key];
-      maxScoreId = parseInt(key);
+      maxScoreId = parseInt(key, 10);
     }
   });
+
   return maxScoreId;
-}
+};
 
 const singleProductsLogic = ({
   selectedPreferences,
@@ -45,9 +44,10 @@ const singleProductsLogic = ({
   products,
 }) => {
   const scoreMap = {};
-  products.forEach((element) => {
-    const productPreferences = element?.preferences ?? [];
-    const productFeatures = element?.features ?? [];
+
+  products.forEach((product) => {
+    const productPreferences = product?.preferences ?? [];
+    const productFeatures = product?.features ?? [];
     let productScore = 0;
 
     (selectedFeatures ?? []).forEach((selectedFeature) => {
@@ -56,23 +56,29 @@ const singleProductsLogic = ({
       }
     });
 
-      (selectedPreferences ?? []).forEach((selectedPreference) => {
-        if (productPreferences.includes(selectedPreference)) {
-          productScore += 1;
-        }
-      });
+    (selectedPreferences ?? []).forEach((selectedPreference) => {
+      if (productPreferences.includes(selectedPreference)) {
+        productScore += 1;
+      }
+    });
 
-    scoreMap[element.id] = productScore;
+    scoreMap[product.id] = productScore;
   });
 
   const maxScoreId = getMaxScoreProductId(scoreMap);
+
   if (!maxScoreId) {
     return [];
   }
-  return [products.find(element => parseInt(element.id) === maxScoreId)];
+
+  return [
+    products.find(
+      (product) => parseInt(product.id, 10) === maxScoreId,
+    ),
+  ];
 };
 
-const getRecommendations = (
+const resolveRecommendations = (
   formData = {
     selectedPreferences: [],
     selectedFeatures: [],
@@ -80,19 +86,18 @@ const getRecommendations = (
   },
   products,
 ) => {
-  /**
-   * Crie aqui a lógica para retornar os produtos recomendados.
-   */
-  let productsResults = [];
-  const { selectedRecommendationType, selectedFeatures, selectedPreferences } =
-    formData;
+  const {
+    selectedRecommendationType,
+    selectedFeatures,
+    selectedPreferences,
+  } = formData;
 
   if (!selectedRecommendationType) {
     return products;
   }
 
   if (selectedRecommendationType === 'SingleProduct') {
-    productsResults = singleProductsLogic({
+    return singleProductsLogic({
       selectedPreferences,
       selectedFeatures,
       products,
@@ -100,17 +105,26 @@ const getRecommendations = (
   }
 
   if (selectedRecommendationType === 'MultipleProducts') {
-    productsResults = multipleProductsLogic({
+    return multipleProductsLogic({
       selectedPreferences,
       selectedFeatures,
       products,
     });
   }
 
-  return productsResults;
+  return [];
 };
 
-// Linter Obs
-const recommendationService = { getRecommendations };
+const MIN_LOADING_TIME = 600;
+
+const getRecommendations = async (formData, products) => {
+  await new Promise((resolve) => setTimeout(resolve, MIN_LOADING_TIME));
+
+  return resolveRecommendations(formData, products);
+};
+
+const recommendationService = {
+  getRecommendations,
+};
 
 export default recommendationService;
